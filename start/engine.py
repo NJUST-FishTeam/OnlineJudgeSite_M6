@@ -4,6 +4,8 @@
 import sys
 sys.path.append("..")
 
+import time
+
 from connector.m6connector import M6Connector
 import config
 def _complie(submission):
@@ -29,4 +31,4 @@ def work():
     _complie(submission)
     _judge(submission)
     _validate(submission)
-
+    time.sleep(100)

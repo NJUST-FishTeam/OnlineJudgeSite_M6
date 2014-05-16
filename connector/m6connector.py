@@ -10,6 +10,7 @@ import uuid
 from connector.client import Client
 from protocol.submission import Submission
 from connector.proxy import Proxy
+from connector.testdata import DataClient
 import start.config as config
 
 class M6Connector(object):
@@ -80,8 +81,20 @@ class M6Connector(object):
 
 
     def prepare(self, response, inputDataFile, sourceCodeFile):
-        return config.tempPath + '/1'
-        pass
+        dataclient = DataClient()
+
+        testDataId = response['testDataId']
+        inputMd5 = response['inputMd5']
+        outputMd5 = response['outputMd5']
+
+        if not dataclient.checkout_md5(inputMd5, 'IN', testDataId):
+            dataclient.update_data(testDataId, 'in.in')
+
+        if not dataclient.checkout_md5(outputMd5, 'OUT', testDataId):
+            dataclient.update_data(testDataId, 'out.out')
+
+        return config.outPath
+
 
     def send_result(self):
         pass
