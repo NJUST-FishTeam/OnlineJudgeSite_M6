@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-#from __future__ import absolute_import
+from __future__ import absolute_import
 
 import config
 import os
@@ -11,15 +11,37 @@ import subprocess
 def judge(source_code_path, lang, test_data_id,
         time_limit=1000, memory_limit=65535,
         spj=False, spj_lang=config.LANG_UNKOWN):
+    '''
+    判题模块对外提供的接口
+
+    输入：
+    source_code_path 源代码路径
+    lang             程序语言，见config文件
+    test_data_id     测试数据的ID
+    time_limit       时间限制
+    memory_limit     内存限制
+    spj              是否是SpecialJudge
+    spj_lang         SpecialJudge程序使用的语言
+
+    输出：
+    返回一个字典
+    result = {
+            'status':'System Error', # 判题结果，System Error是默认状态
+            'run_time':'0',          # 运行时间
+            'run_memory':'0',        # 运行内存
+            'extra_message':''       # 额外信息，如编译错误信息
+        }
+    '''
 
     code_path = _prepare_files(source_code_path, lang, test_data_id, spj)
     _run_core(code_path, time_limit, memory_limit, spj, spj_lang)
+    result = _get_result()
     _clean_files()
 
-    return _get_result()
+    return result
 
 def _prepare_files(source_code_path, lang, test_data_id, spj=False):
-    # 准备代码
+    # 准备代码文件
     if lang == config.LANG_C:
         code = os.path.join(config.run_dir, 'code.c')
     elif lang == config.LANG_CPP:
@@ -83,9 +105,9 @@ def _get_result():
         config.logger.error("无判题结果文件")
         config.logger.error(e)
     else:
-        result['status'] = result_file.readline()
-        result['run_time'] = result_file.readline()
-        result['run_memory'] = result_file.readline()
+        result['status'] = result_file.readline().strip('\n')
+        result['run_time'] = result_file.readline().strip('\n')
+        result['run_memory'] = result_file.readline().strip('\n')
         result['extra_message'] = result.read()
 
     return result
