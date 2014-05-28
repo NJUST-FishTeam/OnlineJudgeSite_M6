@@ -41,8 +41,8 @@ coverage.xml
 .mr.developer.cfg
 .project
 .pydevproject
-.sublime-project
-.sublime-workspace
+*.sublime-project
+*.sublime-workspace
 
 # Rope
 .ropeproject
@@ -57,6 +57,9 @@ docs/_build/
 lastSource
 run_dir/
 data_dir/
-
-
-
+Core
+*.out
+*.in
+*.out
+*.txt
+*.log
