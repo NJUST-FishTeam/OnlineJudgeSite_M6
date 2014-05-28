@@ -35,9 +35,10 @@ def judge(source_code_path, lang, test_data_id,
 
     code_path = _prepare_files(source_code_path, lang, test_data_id, spj)
     _run_core(code_path, time_limit, memory_limit, spj, spj_lang)
+    result = _get_result()
     _clean_files()
 
-    return _get_result()
+    return result
 
 def _prepare_files(source_code_path, lang, test_data_id, spj=False):
     # 准备代码文件
@@ -104,9 +105,9 @@ def _get_result():
         config.logger.error("无判题结果文件")
         config.logger.error(e)
     else:
-        result['status'] = result_file.readline()
-        result['run_time'] = result_file.readline()
-        result['run_memory'] = result_file.readline()
+        result['status'] = result_file.readline().strip('\n')
+        result['run_time'] = result_file.readline().strip('\n')
+        result['run_memory'] = result_file.readline().strip('\n')
         result['extra_message'] = result.read()
 
     return result
