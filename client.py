@@ -63,16 +63,15 @@ class Client(object):
             self.con.close()
             self.hasConnected = False
             config.logger.info("连接已经关闭.")
-        response = ''
         response = self.con.recv(65535)
-        print "Type of response : ", type(response)
-        print "Response :", response
+        # print "Type of response : ", type(response)
+        # print "Response :", response
         # _content, _type = self.rmatch(response)
         # response = MyDecoder().decode(_content)
         response, _type = self.rmatch(response)
-        print 'Response1 : ', response
+        # print 'Response1 : ', response
         response = eval(response)
-        print 'Type1 : ', type(response)
+        # print 'Type1 : ', type(response)
         return response
 
 

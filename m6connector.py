@@ -3,7 +3,6 @@
 
 
 import time
-import uuid
 
 from client import Client
 from submission import Submission
@@ -45,10 +44,20 @@ class M6Connector(object):
             self.online()
             config.logger.info("M6Connector 已经上线成功.")
 
+
+    def _write_source_code(self, response):
+        with open(config.lastSource, 'w') as fp:
+            fp.write("//requestTime: %s\n" % response['dateTime'])
+            fp.write("//submissionId: %s\n" % response['submissionId'])
+            fp.write("//compiler: %s\n" % response['compiler'])
+            fp.write("//validator: %s\n" % response['validator'])
+            fp.write(response['sourceCode'])
+
+
     def get_submission(self):
         response = None
         is_valid = False
-        while not response or not is_valid:
+        while not is_valid:
             try:
                 proxy = Proxy()
                 response = proxy.get_submission()
@@ -56,14 +65,12 @@ class M6Connector(object):
                 config.logger.error(e)
                 self.is_online = False
                 self.on_load()
-            if response['valid']:
+            if response['valid'] == 'true':
                 is_valid = True
+            time.sleep(2)
 
-
-        inputDataFile = config.tempPath + '/' + str(uuid.uuid4())
-        sourceCodeFile = config.tempPath + '/Main'
-
-        outputDataFile = self.prepare(response, inputDataFile, sourceCodeFile)
+        self._write_source_code(response)
+        self.prepare(response)
 
         submissionId = response['submissionId']
         timeLimit = response['timeLimit']
@@ -72,13 +79,11 @@ class M6Connector(object):
         validator = response['validator']
         saveOutput = response['keepOutput']
 
-        submission = Submission(submissionId, compiler, validator, sourceCodeFile, config.tempPath,
-                inputDataFile, outputDataFile, timeLimit, memoryLimit, saveOutput
-            )
+        submission = Submission(submissionId, compiler, validator, timeLimit, memoryLimit, saveOutput)
         return submission
 
 
-    def prepare(self, response, inputDataFile, sourceCodeFile):
+    def prepare(self, response):
         dataclient = DataClient()
 
         testDataId = response['testDataId']
@@ -90,8 +95,6 @@ class M6Connector(object):
 
         if not dataclient.checkout_md5(outputMd5, 'OUT', testDataId):
             dataclient.update_data(testDataId, 'out.out')
-
-        return config.outPath
 
 
     def send_result(self):

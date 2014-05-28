@@ -24,19 +24,8 @@ def _init():
         os.utime(config.lastSource, None)
 
 
-def _complie(submission):
-    config.logger.info("开始编译")
-    pass
 
 
-def _judge(submission):
-    config.logger.info("开始判题")
-    pass
-
-
-def _validate(submission):
-    config.logger.info("开始验证")
-    pass
 
 
 def _judge_over():
@@ -48,9 +37,6 @@ def _work():
     m6connector.on_load()
     submission = m6connector.get_submission()
     config.logger.info("已得到可用的判题请求")
-    _complie(submission)
-    _judge(submission)
-    _validate(submission)
 
     time.sleep(100)
 

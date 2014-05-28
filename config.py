@@ -18,9 +18,9 @@ run_dir = os.path.join(dir_, "run_dir")
 data_dir = os.path.join(dir_, "data_dir")
 
 
-host = "10.210.104.9"
+host = "192.168.0.121"
 port = 27182
-datahost = "10.210.104.9"
+datahost = "192.168.0.121"
 dataport = 31415
 
 
