@@ -15,6 +15,7 @@ class MyDecoder(json.JSONDecoder):
 
 	def __init__(self):
 		json.JSONDecoder.__init__(self,object_hook=self.dict2object)
+
 	def dict2object(self,d):
 		if '__class__' in d:
 			class_name = d.pop('__class__')
@@ -28,13 +29,3 @@ class MyDecoder(json.JSONDecoder):
 		return inst
 
 
-#class Person(object):
-#	def __init__(self,name):
-#		self.name = name
-#	def __repr__(self):
-#		return 'Person:name %s ' % self.name
-#p = Person('zhangsan')
-#d = MyEncoder().encode(p)
-#o = MyDecoder().decode(d)
-#print d
-#print type(o),o

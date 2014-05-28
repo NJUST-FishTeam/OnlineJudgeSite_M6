@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys
-sys.path.append("..")
 
 import re
 import socket
 
-import start.config as config
-from tools.en_de_coder import MyEncoder, MyDecoder
+import config
+from en_de_coder import MyEncoder
 
 
 class Client(object):
@@ -49,7 +47,7 @@ class Client(object):
             _type = match.group("Type")
             return _content, _type
         else:
-            return None, None
+            return None
 
     def match(self, content, _type):
         temp = '<Request type=\"%s\">%s</Request>' % (_type, content)
@@ -60,7 +58,7 @@ class Client(object):
         request = self.match(request, _type)
         try:
             self.con.sendall(request)
-        except:
+        except Exception:
             config.logger.critical("Send request message failed.")
             self.con.close()
             self.hasConnected = False
@@ -76,12 +74,5 @@ class Client(object):
         response = eval(response)
         print 'Type1 : ', type(response)
         return response
-
-
-
-
-
-
-
 
 

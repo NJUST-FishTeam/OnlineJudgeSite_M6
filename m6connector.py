@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys
-sys.path.append("..")
 
 import time
 import uuid
 
-from connector.client import Client
-from protocol.submission import Submission
-from connector.proxy import Proxy
-from connector.testdata import DataClient
-import start.config as config
+from client import Client
+from submission import Submission
+from proxy import Proxy
+from testdata import DataClient
+import config
 
 class M6Connector(object):
     _instance = None
@@ -31,7 +29,7 @@ class M6Connector(object):
             response = proxy.online()
             self.is_online = True
             config.logger.info("上线成功，节点ID：%s" % response['siteId'])
-        except (), msg:
+        except Exception, msg:
             config.logger.error("上线失败，错误信息：%s" % msg)
 
     def on_load(self):
@@ -54,7 +52,7 @@ class M6Connector(object):
             try:
                 proxy = Proxy()
                 response = proxy.get_submission()
-            except (), e:
+            except Exception, e:
                 config.logger.error(e)
                 self.is_online = False
                 self.on_load()

@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys
-sys.path.append("..")
 
 import time
 import uuid
 
-from connector.client import Client
-from protocol.request import *
-import start.config as config
+from client import Client
+from request import *
+import config
 class Proxy(object):
+
     _instance = None
     _key = ''
     _secret = ''
     _siteId = ''
+
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(Proxy, cls).__new__(
