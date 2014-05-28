@@ -1,5 +1,5 @@
-//requestTime: 2014-05-28 12:34:05
-//submissionId: 76871
+//requestTime: 2014-05-28 21:19:51
+//submissionId: 76879
 //compiler: Java
 //validator: Text Validator
 import java.util.Scanner;
@@ -13,3 +13,4 @@ import java.util.Scanner;
             }
         }
     }
+    

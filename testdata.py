@@ -33,6 +33,8 @@ class DataClient(object):
             filename = self.data_path + '/' + testDataId + '/' + 'in.check'
         elif _type == 'OUT':
             filename = self.data_path + '/' + testDataId + '/' + 'out.check'
+        elif _type == 'SPJ':
+            filename = self.data_path + '/' + testDataId + '/' + 'spj.check'
 
         self._touch(filename)
         fp = open(filename, 'r')
@@ -41,8 +43,6 @@ class DataClient(object):
         fp = open(filename, 'w')
         fp.write(md5_value)
         fp.close()
-        # print '_md5=', _md5, ']'
-        # print 'md5_value=', md5_value, ']'
         if _md5 == md5_value:
             return True
         else:

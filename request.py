@@ -49,8 +49,8 @@ class UpdateResultRequest(object):
 		self, siteId, submissionId, judgeResult, runTime, runMemory,
 		compilerOutput, coreOutput, validatorOutput, programOutput, dateTime):
 		self.siteId = siteId
-		self.submissonId = submissionId
-		self.judegeResult = judgeResult
+		self.submissionId = submissionId
+		self.judgeResult = judgeResult
 		self.runTime = runTime
 		self.runMemory = runMemory
 		self.compilerOutput = compilerOutput
