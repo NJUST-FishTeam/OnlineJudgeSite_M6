@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+
+import os
 import logging
 import logging.config
 
@@ -8,17 +10,17 @@ import logging.config
 
 importpath = ['connector', 'protocol', 'tools']
 
-lastSource = "/home/zozoz/judge/lastSource"
-tempPath = "/home/zozoz/judge/temp"
-validatorPath = "/home/zozoz/judge/validators"
-dataPath = "/home/zozoz/judge/siteData"
-errorPath = "/home/zozoz/judge/errorLog"
-outPath = "/home/zozoz/judge/output"
+dir_ = os.getcwd()
+
+lastSource = os.path.join(dir_, "lastSource")
+core_dir = os.path.join(dir_, "Core")
+run_dir = os.path.join(dir_, "run_dir")
+data_dir = os.path.join(dir_, "data_dir")
 
 
-host = "192.168.1.108"
+host = "10.210.104.9"
 port = 27182
-datahost = "192.168.1.108"
+datahost = "10.210.104.9"
 dataport = 31415
 
 
@@ -28,3 +30,10 @@ logger = logging.getLogger("example1")
 
 availableCompiler = ['gcc', 'g++', 'java']
 availableValidator = ['Text Validator', 'Special Validator']
+
+
+#language
+LANG_UNKOWN = 0
+LANG_C = 1
+LANG_CPP = 2
+LANG_JAVA = 3

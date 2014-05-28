@@ -1,18 +1,16 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys
-sys.path.append("..")
 
 import os
 import socket
 
-import start.config as config
+import config
 
 class DataClient(object):
 
     def __init__(self):
-        self.data_path = config.dataPath
+        self.data_path = config.data_dir
         self.host = config.datahost
         self.port = config.dataport
 
@@ -21,19 +19,20 @@ class DataClient(object):
         if not os.path.isdir(path):
             os.makedirs(path)
 
+
     def _touch(self, filename):
         with open(filename, 'a'):
             os.utime(filename, None)
 
 
     def checkout_md5(self, md5_value, _type, testDataId):
-        path = config.dataPath + '/' + testDataId
+        path = self.data_path + '/' + testDataId
         self._mkdir(path)
 
         if _type == 'IN':
-            filename = config.dataPath + '/' + testDataId + '/' + 'in.check'
+            filename = self.data_path + '/' + testDataId + '/' + 'in.check'
         elif _type == 'OUT':
-            filename = config.dataPath + '/' + testDataId + '/' + 'out.check'
+            filename = self.data_path + '/' + testDataId + '/' + 'out.check'
 
         self._touch(filename)
         fp = open(filename, 'w+')
@@ -51,13 +50,13 @@ class DataClient(object):
         try:
             con.connect((self.host, self.port))
         except socket.error, msg:
-            config.logger.critical("DataClient connect to dataserver  failed. Error code: %s, Message: %s" % (msg[0], msg[1]))
+            config.logger.error("DataClient connect to dataserver  failed. Error code: %s, Message: %s" % (msg[0], msg[1]))
         else:
             config.logger.info("DataClient connect to dataserver successed.")
 
         con.send(str(testDataId + "/" + filename))
 
-        path = config.dataPath + '/' + testDataId + '/'
+        path = self.data_path + '/' + testDataId + '/'
         filename = path + filename
         if not os.path.isdir(path):
             os.mkdir(path)

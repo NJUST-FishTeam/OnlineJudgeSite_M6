@@ -41,8 +41,8 @@ coverage.xml
 .mr.developer.cfg
 .project
 .pydevproject
-.sublime-project
-.sublime-workspace
+*.sublime-project
+*.sublime-workspace
 
 # Rope
 .ropeproject
@@ -54,3 +54,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+Core
+*.out
+*.in
+*.out
+*.txt
+judge/test/
+*.log
