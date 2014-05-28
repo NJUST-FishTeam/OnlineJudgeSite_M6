@@ -30,3 +30,10 @@ logger = logging.getLogger("example1")
 
 availableCompiler = ['gcc', 'g++', 'java']
 availableValidator = ['Text Validator', 'Special Validator']
+
+
+#language
+LANG_UNKOWN = 0
+LANG_C = 1
+LANG_CPP = 2
+LANG_JAVA = 3
