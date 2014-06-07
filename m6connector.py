@@ -92,7 +92,7 @@ class M6Connector(object):
         if not dataclient.checkout_md5(outputMd5, 'OUT', testDataId):
             dataclient.update_data(testDataId, 'out.out')
 
-        if not response['validator'] == 'Text Validator':
+        if not (response['validator'] == 'Text Validator'):
             if not dataclient.checkout_md5(spjMd5, 'SPJ', testDataId):
                 dataclient.update_data(testDataId, 'SpecialJudge.' + response['spj_type'])
                 try:
