@@ -63,13 +63,14 @@ class M6Connector(object):
             try:
                 proxy = Proxy()
                 response = proxy.get_submission()
+		# config.logger.debug(response)
             except Exception, e:
                 config.logger.error(e)
                 self.is_online = False
                 self.on_load()
             if response['valid'] == 'true':
                 is_valid = True
-            time.sleep(2)
+            # time.sleep(2)
 
         self._write_source_code(response)
         self.prepare(response)

@@ -4,6 +4,7 @@
 
 import re
 import socket
+import time
 
 import config
 from en_de_coder import MyEncoder
@@ -54,8 +55,10 @@ class Client(object):
         return temp
 
     def send_request(self, request, _type):
+	# config.logger.debug(request)
         request = MyEncoder().encode(request)
         request = self.match(request, _type)
+	# config.logger.debug(request)
         try:
             self.con.sendall(request)
         except Exception:
@@ -63,7 +66,16 @@ class Client(object):
             self.con.close()
             self.hasConnected = False
             config.logger.info("连接已经关闭.")
-        response = self.con.recv(65535)
+        response = ''
+        while True:
+            data  = self.con.recv(1024)
+            response += data
+            # print 'length=', len(data)
+            if data.endswith('南京理工大学开放式在线评测系统'):
+                break
+            #if len(data) < 1024:
+            #    break
+            #time.sleep(1)
         # print "Type of response : ", type(response)
         # print "Response :", response
         # _content, _type = self.rmatch(response)
@@ -72,6 +84,7 @@ class Client(object):
         # print 'Response1 : ', response
         response = eval(response)
         # print 'Type1 : ', type(response)
+	# config.logger.debug(response)
         return response
 
 

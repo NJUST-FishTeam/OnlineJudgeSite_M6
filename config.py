@@ -27,11 +27,11 @@ run_dir = os.path.join(dir_, "run_dir")
 data_dir = os.path.join(dir_, "data_dir")
 
 
-# host = "192.168.0.121"
-host = get_ip_address("wlan0")
+host = "192.168.7.2"
+# host = get_ip_address("wlan0")
 port = 27182
-# datahost = "192.168.0.121"
-datahost = get_ip_address("wlan0")
+datahost = "192.168.7.2"
+# datahost = get_ip_address("wlan0")
 dataport = 31415
 
 

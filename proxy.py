@@ -28,9 +28,10 @@ class Proxy(object):
 
     def get_submission(self):
         dateTime = time.strftime('%Y-%m-%d %X', time.localtime(time.time()))
-        request = GetSubmissionRequest(self._siteId, dateTime, config.availableCompiler, config.availableValidator)
+        request = GetSubmissionRequest(self._siteId, config.availableCompiler, config.availableValidator, dateTime)
         client = Client()
         response = client.send_request(request, 'Get Submission')
+	# config.logger.debug('I am proxy.')
         return response
 
 
