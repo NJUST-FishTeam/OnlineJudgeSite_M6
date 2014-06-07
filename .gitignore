@@ -54,10 +54,12 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+lastSource
+run_dir/
+data_dir/
 Core
 *.out
 *.in
 *.out
 *.txt
-judge/test/
 *.log

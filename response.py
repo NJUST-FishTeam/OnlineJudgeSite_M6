@@ -20,7 +20,8 @@ class GetSubmissionResponse(object):
 
     def __init__(
             self, siteId, valid, submissionId, sourceCode, validator,
-            compiler, testDataId, inputMd5, outputMd5, timeLimit, memoryLimit, keepOutput, dateTime):
+            compiler, testDataId, inputMd5, outputMd5, timeLimit,
+            memoryLimit, keepOutput, dateTime, spjMd5, spj_type):
         self.siteId = siteId
         self.valid = valid
         self.submissionId = submissionId
@@ -34,6 +35,8 @@ class GetSubmissionResponse(object):
         self.memoryLimit = memoryLimit
         self.keepOutput = keepOutput
         self.dateTime = dateTime
+        self.spjMd5 = spjMd5
+        self.spj_type = spj_type
 
 
 class HeartbeatResponse(object):

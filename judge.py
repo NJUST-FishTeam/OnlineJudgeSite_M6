@@ -36,7 +36,7 @@ def judge(source_code_path, lang, test_data_id,
     code_path = _prepare_files(source_code_path, lang, test_data_id, spj)
     _run_core(code_path, time_limit, memory_limit, spj, spj_lang)
     result = _get_result()
-    _clean_files()
+    # _clean_files()
 
     return result
 
@@ -108,7 +108,11 @@ def _get_result():
         result['status'] = result_file.readline().strip('\n')
         result['run_time'] = result_file.readline().strip('\n')
         result['run_memory'] = result_file.readline().strip('\n')
+<<<<<<< HEAD
+        result['extra_message'] = result_file.read()
+=======
         result['extra_message'] = result.read()
+>>>>>>> 1fc74fbd9d92a7e761b010a8f84b372796dd5de3
 
     return result
 

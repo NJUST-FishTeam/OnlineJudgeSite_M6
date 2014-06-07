@@ -1,0 +1,46 @@
+//requestTime: 2014-06-03 18:07:24
+//submissionId: 76970
+//compiler: Java
+//validator: Text Validator
+import java.util.*;
+
+class Main {
+  static class Node {
+    Node lt, rt;
+    char ch;
+    public Node(Node _lt, Node _rt, char _ch) {
+      lt = _lt;
+      rt = _rt;
+      ch = _ch;
+    }
+    public void write() {
+      if (lt != null) {
+        lt.write();
+      }
+      if (rt != null) {
+        rt.write();
+      }
+      System.out.print(ch);
+    }
+  }
+  public static Node work(String pr, String in) {
+    for (int i = 0; i < in.length(); ++i) {
+      if (in.charAt(i) == pr.charAt(0)) {
+        Node lt = work(pr.substring(1, 1 + i), in.substring(0, i));
+        Node rt = work(pr.substring(1 + i), in.substring(i + 1));
+        return new Node(lt, rt, pr.charAt(0));
+      }
+    }
+    return null;
+  }
+  public static void main(String[] args) {
+    Scanner rd = new Scanner(System.in);
+    int n_case = rd.nextInt();
+    for (int index = 1; index <= n_case; ++index) {
+      String pr = rd.next();
+      String in = rd.next();
+      work(pr, in).write();
+      System.out.println("");
+    }
+  }
+}

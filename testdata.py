@@ -33,10 +33,14 @@ class DataClient(object):
             filename = self.data_path + '/' + testDataId + '/' + 'in.check'
         elif _type == 'OUT':
             filename = self.data_path + '/' + testDataId + '/' + 'out.check'
+        elif _type == 'SPJ':
+            filename = self.data_path + '/' + testDataId + '/' + 'spj.check'
 
         self._touch(filename)
-        fp = open(filename, 'w+')
+        fp = open(filename, 'r')
         _md5 = fp.readline()
+        fp.close()
+        fp = open(filename, 'w')
         fp.write(md5_value)
         fp.close()
         if _md5 == md5_value:
@@ -59,7 +63,7 @@ class DataClient(object):
         path = self.data_path + '/' + testDataId + '/'
         filename = path + filename
         if not os.path.isdir(path):
-            os.mkdir(path)
+            os.makedirs(path)
         with open(filename, 'a'):
             os.utime(filename, None)
         os.remove(filename)

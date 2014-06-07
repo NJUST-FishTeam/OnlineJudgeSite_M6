@@ -6,21 +6,32 @@ import os
 import logging
 import logging.config
 
+import fcntl
+import socket
+import struct
+import thread
 
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+    )[20:24])
 
-importpath = ['connector', 'protocol', 'tools']
 
 dir_ = os.getcwd()
-
 lastSource = os.path.join(dir_, "lastSource")
 core_dir = os.path.join(dir_, "Core")
 run_dir = os.path.join(dir_, "run_dir")
 data_dir = os.path.join(dir_, "data_dir")
 
 
-host = "10.210.104.9"
+host = "192.168.7.2"
+# host = get_ip_address("wlan0")
 port = 27182
-datahost = "10.210.104.9"
+datahost = "192.168.7.2"
+# datahost = get_ip_address("wlan0")
 dataport = 31415
 
 
