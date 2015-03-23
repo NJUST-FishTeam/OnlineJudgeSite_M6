@@ -7,22 +7,24 @@ from sqlalchemy.sql import text
 
 from config import conf
 
-engine = create_engine("mysql://{0}:{1}@{2}/{3}".format(conf.mysql_user,
+engine = create_engine("mysql://{0}:{1}@{2}/{3}?charset=utf8".format(conf.mysql_user,
                                                         conf.mysql_password,
                                                         conf.mysql_host,
-                                                        conf.mysql_db_name),
-                       encoding='utf-8')
+                                                        conf.mysql_db_name))
 
 
 def save_result(status_id=0, type='normal', run_time=0, run_memory=0, compiler_output="", status="SystemError"):
     if type == 'normal':
-        table = 'fishteam_submit_status'
+        sql = text(
+            '''
+            update fishteam_submit_status set `compilerOutput` = :compiler_output, `runtime` = :run_time, `runmemory` = :run_memory, `status` = :status where `id` = :status_id;
+            '''
+        )
     else:
-        table = 'fishteam_contest_status'
+        sql = text(
+            '''
+            update fishteam_contest_status set `compilerOutput` = :compiler_output, `runtime` = :run_time, `runmemory` = :run_memory, `status` = :status where `id` = :status_id;
+            '''
+        )
 
-    sql = text(
-        '''
-        update :table set compilerOutput = :compiler_output, runtime = :runtime, runmemory = :run_memory, status = :status where id = :status_id;
-        '''
-    )
-    engine.execute(sql, table=table, compiler_output=compiler_output, run_time=run_time, run_memory=run_memory, status=status, status_id=status_id)
+    engine.execute(sql, compiler_output=compiler_output, run_time=run_time, run_memory=run_memory, status=status, status_id=status_id)

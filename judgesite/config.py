@@ -13,6 +13,6 @@ conf.mysql_host = "localhost"
 conf.mysql_db_name = ""
 conf.rmq_host = "localhost"
 conf.rmq_port = 5672
-conf.rmq_queue = "submit_task"
+conf.rmq_queue = "task"
 conf.rmq_user = "guest"
 conf.rmq_password = "guest"

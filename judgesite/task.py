@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import io
 import json
 import shutil
 import subprocess
@@ -15,14 +16,16 @@ class JudgeTask(object):
     def __init__(self, message):
         task = json.loads(message)
         self.submit_type = task["submit_type"]
-        self.status_id = task["status_id"]
+        self.status_id = str(task["status_id"])
         self.code = task["code"]
         self.language = task["language"]
-        self.testdata_id = task["testdata_id"]
-        self.time_limit = task["time_limit"]
-        self.memory_limit = task["memory_limit"]
+        self.testdata_id = str(task["testdata_id"])
+        self.time_limit = str(task["time_limit"])
+        self.memory_limit = str(task["memory_limit"])
 
     def go(self):
+        self._clean_files()
+
         self._prepare_temp_dir()
 
         self._dump_code_to_file()
@@ -42,29 +45,21 @@ class JudgeTask(object):
 
     def _dump_code_to_file(self):
         filename = "Main." + self.language
-        code_file = open(os.path.join(conf.tmp_path, filename), 'w')
-        self.code_file = code_file
+        self.code_file = os.path.join(conf.tmp_path, filename)
+        code_file = io.open(self.code_file, 'w', encoding='utf8')
         code_file.write(self.code)
         code_file.close()
 
     def _prepare_testdata_file(self):
-        input_file = os.path.join(conf.testdata_path, "in.in")
-        output_file = os.path.join(conf.testdata_path, "out.out")
+        input_file = os.path.join(conf.testdata_path, self.testdata_id, "in.in")
+        output_file = os.path.join(conf.testdata_path, self.testdata_id, "out.out")
         shutil.copy(input_file, conf.tmp_path)
         shutil.copy(output_file, conf.tmp_path)
 
     def _run(self):
-        commands = []
-        commands.append("sudo")
-        commands.append("./Core")
-        commands.append("-c")
-        commands.append(self.code_file)
-        commands.append("-t")
-        commands.append(self.time_limit)
-        commands.append("-m")
-        commands.append(self.memory_limit)
-        commands.append("-d")
-        commands.append(conf.tmp_path)
+        commands = ["sudo", "./Core", "-c", self.code_file, "-t",
+                    self.time_limit, "-m", self.memory_limit, "-d",
+                    conf.tmp_path]
 
         subprocess.call(commands)
 
@@ -84,4 +79,5 @@ class JudgeTask(object):
                     status=self.result)
 
     def _clean_files(self):
-        shutil.rmtree(conf.tmp_path)
+        if os.path.exists(conf.tmp_path):
+            shutil.rmtree(conf.tmp_path)
