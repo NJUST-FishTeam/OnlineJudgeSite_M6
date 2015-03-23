@@ -1,1 +1,2 @@
 pika==0.9.14
+SQLAlchemy==0.9.9
