@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 
 from judgesite.service import JudgeSite
 
 
-def build_server(host='localhost', port=5672, queue='submit_task', user='guest', password='guest'):
-    srv = JudgeSite(host=host, port=port, queue=queue, user=user, password=password)
-    return srv
-
-
 def main():
-    srv = build_server()
+    logging.basicConfig(format='%(levelname)s:%(asctime)s %(filename)s %(funcName)s %(lineno)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+    logging.info("Judge Node starting...")
+    srv = JudgeSite()
     srv.run()
 
 
