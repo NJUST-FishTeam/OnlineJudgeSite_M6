@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+import logging
 import pika
 
 from config import conf
@@ -18,8 +19,10 @@ class JudgeSite(object):
 
     def _consume(self, ch, method, properties, body):
         #print " [x] Received %r" % (body,)
+        logging.info("GOT A TASK!")
         task = JudgeTask(body)
         task.go()
+        logging.info("TASK IS DONE!")
 
     def run(self):
         self.channel.start_consuming()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import io
 import json
 import shutil
@@ -41,9 +42,11 @@ class JudgeTask(object):
         self._clean_files()
 
     def _prepare_temp_dir(self):
+        logging.info("Prepare temp dir")
         os.mkdir(conf.tmp_path)
 
     def _dump_code_to_file(self):
+        logging.info("Dump code to file")
         filename = "Main." + self.language
         self.code_file = os.path.join(conf.tmp_path, filename)
         code_file = io.open(self.code_file, 'w', encoding='utf8')
@@ -51,12 +54,14 @@ class JudgeTask(object):
         code_file.close()
 
     def _prepare_testdata_file(self):
+        logging.info("Prepare testdata")
         input_file = os.path.join(conf.testdata_path, self.testdata_id, "in.in")
         output_file = os.path.join(conf.testdata_path, self.testdata_id, "out.out")
         shutil.copy(input_file, conf.tmp_path)
         shutil.copy(output_file, conf.tmp_path)
 
     def _run(self):
+        logging.info("GO!GO!GO!")
         commands = ["sudo", "./Core", "-c", self.code_file, "-t",
                     self.time_limit, "-m", self.memory_limit, "-d",
                     conf.tmp_path]
@@ -64,6 +69,7 @@ class JudgeTask(object):
         subprocess.call(commands)
 
     def _read_result(self):
+        logging.info("Read result")
         result_file = open(os.path.join(conf.tmp_path, "result.txt"), 'r')
         self.result = result_file.readline().strip()
         self.run_time = result_file.readline().strip()
@@ -71,6 +77,7 @@ class JudgeTask(object):
         self.others = result_file.read()
 
     def _save_result(self):
+        logging.info("Save result")
         save_result(status_id=self.status_id,
                     type=self.submit_type,
                     run_time=self.run_time,
@@ -79,5 +86,6 @@ class JudgeTask(object):
                     status=self.result)
 
     def _clean_files(self):
+        logging.info("Clean files")
         if os.path.exists(conf.tmp_path):
             shutil.rmtree(conf.tmp_path)
