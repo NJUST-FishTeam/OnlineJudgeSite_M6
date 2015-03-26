@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+import requests
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
@@ -28,3 +29,13 @@ def save_result(status_id=0, type='normal', run_time=0, run_memory=0, compiler_o
         )
 
     engine.execute(sql, compiler_output=compiler_output, run_time=run_time, run_memory=run_memory, status=status, status_id=status_id)
+    update_counters(status_id, type)
+
+
+def update_counters(status_id, type):
+    argument = {
+        'status_id': status_id,
+        'type': type,
+        'access_key': conf.access_key,
+    }
+    requests.post(conf.api_url+"/Api/v1/updatecounter/", argument)
