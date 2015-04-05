@@ -12,7 +12,7 @@ engine = create_engine("mysql://{0}:{1}@{2}/{3}?charset=utf8".format(conf.mysql_
                                                         conf.mysql_password,
                                                         conf.mysql_host,
                                                         conf.mysql_db_name),
-                       pool_recycle=7200)
+                       pool_recycle=600)
 
 
 def save_result(status_id=0, type='normal', run_time=0, run_memory=0, compiler_output="", status="SystemError"):
