@@ -11,7 +11,8 @@ from config import conf
 engine = create_engine("mysql://{0}:{1}@{2}/{3}?charset=utf8".format(conf.mysql_user,
                                                         conf.mysql_password,
                                                         conf.mysql_host,
-                                                        conf.mysql_db_name))
+                                                        conf.mysql_db_name),
+                       pool_recycle=7200)
 
 
 def save_result(status_id=0, type='normal', run_time=0, run_memory=0, compiler_output="", status="SystemError"):
