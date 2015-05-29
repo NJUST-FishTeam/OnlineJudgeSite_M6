@@ -6,6 +6,7 @@ from util import ObjectDict
 
 conf = ObjectDict()
 conf.testdata_path = ""
+conf.tmp_path = ""
 conf.mysql_user = ""
 conf.mysql_password = ""
 conf.mysql_host = ""
