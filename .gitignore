@@ -64,3 +64,6 @@ Core
 *.in
 *.out
 *.log
+testdata/
+tmp/
+core_log.txt

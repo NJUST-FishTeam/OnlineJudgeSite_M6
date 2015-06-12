@@ -13,12 +13,7 @@ from models import save_result
 
 
 class NoTestDataException(Exception):
-
-    def __init__(self, value=None):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    pass
 
 
 class JudgeTask(object):
@@ -78,10 +73,8 @@ class JudgeTask(object):
             conf.testdata_path, self.testdata_id, "in.in")
         output_file = os.path.join(
             conf.testdata_path, self.testdata_id, "out.out")
-        testdata_exists = (
-            os.path.exists(input_file), os.path.exists(output_file))
-        if not testdata_exists[0] or not testdata_exists[1]:
-            raise NoTestDataException(testdata_exists)
+        if not os.path.exists(input_file) or not os.path.exists(output_file):
+            raise NoTestDataException()
         shutil.copy(input_file, conf.tmp_path)
         shutil.copy(output_file, conf.tmp_path)
 
