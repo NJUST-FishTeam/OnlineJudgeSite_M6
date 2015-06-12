@@ -12,6 +12,15 @@ from config import conf
 from models import save_result
 
 
+class NoTestDataException(Exception):
+
+    def __init__(self, value=None):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
 class JudgeTask(object):
 
     def __init__(self, message):
@@ -24,18 +33,28 @@ class JudgeTask(object):
         self.time_limit = str(task["time_limit"])
         self.memory_limit = str(task["memory_limit"])
 
+        self.result = ""
+        self.run_time = 0
+        self.run_memory = 0
+        self.others = ""
+
     def go(self):
         self._clean_files()
 
-        self._prepare_temp_dir()
+        try:
+            self._prepare_temp_dir()
 
-        self._dump_code_to_file()
+            self._dump_code_to_file()
 
-        self._prepare_testdata_file()
+            self._prepare_testdata_file()
+        except NoTestDataException, e:
+            self.result = 'NoTestDataError'
+        except Exception, e:
+            raise e
+        else:
+            self._run()
 
-        self._run()
-
-        self._read_result()
+            self._read_result()
 
         self._save_result()
 
@@ -55,8 +74,14 @@ class JudgeTask(object):
 
     def _prepare_testdata_file(self):
         logging.info("Prepare testdata")
-        input_file = os.path.join(conf.testdata_path, self.testdata_id, "in.in")
-        output_file = os.path.join(conf.testdata_path, self.testdata_id, "out.out")
+        input_file = os.path.join(
+            conf.testdata_path, self.testdata_id, "in.in")
+        output_file = os.path.join(
+            conf.testdata_path, self.testdata_id, "out.out")
+        testdata_exists = (
+            os.path.exists(input_file), os.path.exists(output_file))
+        if not testdata_exists[0] or not testdata_exists[1]:
+            raise NoTestDataException(testdata_exists)
         shutil.copy(input_file, conf.tmp_path)
         shutil.copy(output_file, conf.tmp_path)
 
