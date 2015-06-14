@@ -74,7 +74,7 @@ class JudgeTask(object):
         output_file = os.path.join(
             conf.testdata_path, self.testdata_id, "out.out")
         if not os.path.exists(input_file) or not os.path.exists(output_file):
-            raise NoTestDataException()
+            raise NoTestDataException
         shutil.copy(input_file, conf.tmp_path)
         shutil.copy(output_file, conf.tmp_path)
 
