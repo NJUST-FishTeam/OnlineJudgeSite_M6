@@ -56,7 +56,7 @@ class JudgeTask(object):
 
         self._save_result()
 
-        # self._clean_files()
+        self._clean_files()
 
     def _compile_spj_exec(self):
         if self.validator == 'Special Validator':

@@ -21,11 +21,11 @@ Configure = namedtuple("Configure", [
     'api_url'
 ])
 mysql_setting = requests.get(
-    'http://etcc-server:8009/services/mysql-01/configures/production/').json()['data']
+    'http://etcc.in.njoj.org:8009/services/mysql-01/configures/production/').json()['data']
 rabbitmq_setting = requests.get(
-    'http://etcc-server:8009/services/rabbitmq-01/configures/production/').json()['data']
+    'http://etcc.in.njoj.org:8009/services/rabbitmq-01/configures/production/').json()['data']
 judge_site_setting = requests.get(
-    'http://etcc-server:8009/services/judge-site/configures/default/').json()['data']
+    'http://etcc.in.njoj.org:8009/services/judge-site/configures/default/').json()['data']
 
 conf = Configure(
     testdata_path="",
