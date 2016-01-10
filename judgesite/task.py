@@ -27,6 +27,7 @@ class JudgeTask(object):
         self.testdata_id = str(task["testdata_id"])
         self.time_limit = str(task["time_limit"])
         self.memory_limit = str(task["memory_limit"])
+        self.validator = str(task["validator"])
 
         self.result = ""
         self.run_time = 0
@@ -37,6 +38,8 @@ class JudgeTask(object):
         self._clean_files()
 
         try:
+            self._compile_spj_exec()
+
             self._prepare_temp_dir()
 
             self._dump_code_to_file()
@@ -54,6 +57,17 @@ class JudgeTask(object):
         self._save_result()
 
         self._clean_files()
+
+    def _compile_spj_exec(self):
+        if self.validator == 'Special Validator':
+            spj_exec_path = os.path.join(
+                conf.testdata_path, self.testdata_id, "SpecialJudge")
+            if not os.path.exists(spj_exec_path):
+                spj_code_file = os.path.join(
+                    conf.testdata_path, self.testdata_id, "specialjudge.cpp")
+                commands = ["g++", spj_code_file, "-lm",
+                            "-static", "-O2", "-w", '-o', spj_exec_path]
+                subprocess.call(commands)
 
     def _prepare_temp_dir(self):
         logging.info("Prepare temp dir")
@@ -77,13 +91,18 @@ class JudgeTask(object):
             raise NoTestDataException
         shutil.copy(input_file, conf.tmp_path)
         shutil.copy(output_file, conf.tmp_path)
+        if self.validator == 'Special Validator':
+            spj_exec_path = os.path.join(
+                conf.testdata_path, self.testdata_id, "SpecialJudge")
+            shutil.copy(spj_exec_path, conf.tmp_path)
 
     def _run(self):
         logging.info("GO!GO!GO!")
         commands = ["sudo", "./Core", "-c", self.code_file, "-t",
                     self.time_limit, "-m", self.memory_limit, "-d",
                     conf.tmp_path]
-
+        if self.validator == 'Special Validator':
+            commands += ["-s", "-S", "2"]  # 2 = cpp
         subprocess.call(commands)
 
     def _read_result(self):
