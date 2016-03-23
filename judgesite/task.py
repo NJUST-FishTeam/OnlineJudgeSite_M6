@@ -19,7 +19,6 @@ class JudgeTask(object):
 
     def __init__(self, message, save_result_callback):
         task = json.loads(message)
-        print message
         self.id = task['id']
         self.code = task["code"]
         self.language = task["language"]
@@ -34,6 +33,8 @@ class JudgeTask(object):
         self.others = ""
 
         self.save_result_callback = save_result_callback
+
+        logging.info("Task id is: %s" % self.id)
 
     def go(self):
         self._clean_files()
@@ -115,7 +116,7 @@ class JudgeTask(object):
         self.others = result_file.read()
 
     def _save_result(self):
-        logging.info("Save result")
+        logging.info("Save result, result is %s" % self.result)
         self.save_result_callback(
             id=self.id,
             run_time=self.run_time,
