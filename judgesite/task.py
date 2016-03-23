@@ -9,7 +9,6 @@ import subprocess
 import os
 
 from config import conf
-from models import save_result
 
 
 class NoTestDataException(Exception):
@@ -18,10 +17,10 @@ class NoTestDataException(Exception):
 
 class JudgeTask(object):
 
-    def __init__(self, message):
+    def __init__(self, message, save_result_callback):
         task = json.loads(message)
-        self.submit_type = task["submit_type"]
-        self.status_id = str(task["status_id"])
+        print message
+        self.id = task['id']
         self.code = task["code"]
         self.language = task["language"]
         self.testdata_id = str(task["testdata_id"])
@@ -33,6 +32,8 @@ class JudgeTask(object):
         self.run_time = 0
         self.run_memory = 0
         self.others = ""
+
+        self.save_result_callback = save_result_callback
 
     def go(self):
         self._clean_files()
@@ -115,12 +116,12 @@ class JudgeTask(object):
 
     def _save_result(self):
         logging.info("Save result")
-        save_result(status_id=self.status_id,
-                    type=self.submit_type,
-                    run_time=self.run_time,
-                    run_memory=self.run_memory,
-                    compiler_output=self.others,
-                    status=self.result)
+        self.save_result_callback(
+            id=self.id,
+            run_time=self.run_time,
+            run_memory=self.run_memory,
+            compiler_output=self.others,
+            status=self.result)
 
     def _clean_files(self):
         logging.info("Clean files")
