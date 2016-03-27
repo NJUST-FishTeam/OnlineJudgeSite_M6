@@ -42,20 +42,24 @@ class JudgeSite(object):
         self.channel.start_consuming()
 
     def save_result(self, id, run_time=0, run_memory=0, compiler_output="", status="SystemError"):
+        def ensure_unicode(s, encoding='utf-8'):
+            return s.decode(encoding) if isinstance(s, str) else s
+        compiler_output = ensure_unicode(compiler_output)
+        status = ensure_unicode(status)
         body = {
-            'id': id,
-            'data': {
-                'run_time': run_time,
-                'run_memory': run_memory,
-                'compiler_output': compiler_output,
-                'status': status
+            u'id': id,
+            u'data': {
+                u'run_time': run_time,
+                u'run_memory': run_memory,
+                u'compiler_output': compiler_output,
+                u'status': status
             }
 
         }
         self.channel.basic_publish(
             exchange=conf.judge_exchange,
             routing_key=conf.judege_result_queue,
-            body=json.dumps(body, ensure_ascii=False),
+            body=json.dumps(body, ensure_ascii=False),  # We shouldn't mix unicode with str
             properties=pika.BasicProperties(
                 delivery_mode=2,  # make message persistent
             ))
