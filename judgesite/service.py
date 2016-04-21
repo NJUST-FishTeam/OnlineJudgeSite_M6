@@ -23,10 +23,10 @@ class JudgeSite(object):
                                 exchange=conf.judge_exchange,
                                 routing_key=conf.judge_task_queue)
         # judge_result_queue
-        self.channel.queue_declare(queue=conf.judege_result_queue, durable=True)
-        self.channel.queue_bind(queue=conf.judege_result_queue,
+        self.channel.queue_declare(queue=conf.judge_result_queue, durable=True)
+        self.channel.queue_bind(queue=conf.judge_result_queue,
                                 exchange=conf.judge_exchange,
-                                routing_key=conf.judege_result_queue)
+                                routing_key=conf.judge_result_queue)
 
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self._consume, queue=conf.judge_task_queue)
@@ -58,7 +58,7 @@ class JudgeSite(object):
         }
         self.channel.basic_publish(
             exchange=conf.judge_exchange,
-            routing_key=conf.judege_result_queue,
+            routing_key=conf.judge_result_queue,
             body=json.dumps(body, ensure_ascii=False),  # We shouldn't mix unicode with str
             properties=pika.BasicProperties(
                 delivery_mode=2,  # make message persistent

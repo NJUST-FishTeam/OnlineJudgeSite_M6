@@ -14,7 +14,7 @@ Configure = namedtuple("Configure", [
     'rmq_password',
     'judge_task_queue',
     'judge_exchange',
-    'judege_result_queue'
+    'judge_result_queue'
 ])
 rabbitmq_setting = requests.get(
     'http://etcc.in.njoj.org:8009/services/rabbitmq-01/configures/production/').json()['data']
@@ -30,5 +30,5 @@ conf = Configure(
     rmq_password=rabbitmq_setting['PASSWORD'],
     judge_task_queue=judge_site_setting['judge_task_queue'],
     judge_exchange=judge_site_setting['judge_exchange'],
-    judege_result_queue=judge_site_setting['judege_result_queue'],
+    judge_result_queue=judge_site_setting['judge_result_queue'],
 )
