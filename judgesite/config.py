@@ -13,22 +13,30 @@ Configure = namedtuple("Configure", [
     'rmq_user',
     'rmq_password',
     'judge_task_queue',
-    'judge_exchange',
-    'judge_result_queue'
+    'database_host',
+    'database_port',
+    'database_user',
+    'database_passwd',
+    'database_name',
+    'redis_host',
+    'redis_port',
+    'judge_exchange'
 ])
-rabbitmq_setting = requests.get(
-    'http://etcc.in.njoj.org:8009/services/rabbitmq-01/configures/production/').json()['data']
-judge_site_setting = requests.get(
-    'http://etcc.in.njoj.org:8009/services/judge-site/configures/default/').json()['data']
 
 conf = Configure(
-    testdata_path="",
-    tmp_path="",
-    rmq_host=rabbitmq_setting['HOST'],
-    rmq_port=rabbitmq_setting['PORT'],
-    rmq_user=rabbitmq_setting['USER'],
-    rmq_password=rabbitmq_setting['PASSWORD'],
-    judge_task_queue=judge_site_setting['judge_task_queue'],
-    judge_exchange=judge_site_setting['judge_exchange'],
-    judge_result_queue=judge_site_setting['judge_result_queue'],
+    testdata_path="/home/shuwei/project/fishteam/judgenode/testdata/",
+    tmp_path="/home/shuwei/project/fishteam/judgenode/tmp/",
+    rmq_host="localhost",
+    rmq_port=5672,
+    rmq_user="guest",
+    rmq_password="guest",
+    judge_task_queue="judge_task",
+    judge_exchange="judge_exchange",
+    database_host="localhost",
+    database_port=3306,
+    database_user="root",
+    database_passwd="root",
+    database_name="fishteam_cat",
+    redis_host="localhost",
+    redis_port=6379
 )

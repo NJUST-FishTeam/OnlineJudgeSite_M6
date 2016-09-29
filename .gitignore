@@ -60,6 +60,8 @@ lastSource
 run_dir/
 data_dir/
 Core
+Main
+*.class
 *.out
 *.in
 *.out

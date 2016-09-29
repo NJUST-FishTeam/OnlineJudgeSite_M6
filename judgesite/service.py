@@ -6,6 +6,8 @@ import logging
 import pika
 import json
 
+import redis
+import MySQLdb as mdb
 from config import conf
 from task import JudgeTask
 
@@ -22,11 +24,6 @@ class JudgeSite(object):
         self.channel.queue_bind(queue=conf.judge_task_queue,
                                 exchange=conf.judge_exchange,
                                 routing_key=conf.judge_task_queue)
-        # judge_result_queue
-        self.channel.queue_declare(queue=conf.judge_result_queue, durable=True)
-        self.channel.queue_bind(queue=conf.judge_result_queue,
-                                exchange=conf.judge_exchange,
-                                routing_key=conf.judge_result_queue)
 
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self._consume, queue=conf.judge_task_queue)
@@ -41,25 +38,60 @@ class JudgeSite(object):
     def run(self):
         self.channel.start_consuming()
 
-    def save_result(self, id, run_time=0, run_memory=0, compiler_output="", status="SystemError"):
-        def ensure_unicode(s, encoding='utf-8'):
-            return s.decode(encoding) if isinstance(s, str) else s
-        compiler_output = ensure_unicode(compiler_output)
-        status = ensure_unicode(status)
-        body = {
-            u'id': id,
-            u'data': {
-                u'run_time': run_time,
-                u'run_memory': run_memory,
-                u'compiler_output': compiler_output,
-                u'status': status
-            }
-
+    def update_database(self, id, status, detail, score, compiler_output):
+        logging.info("Start updating database")
+        config = {
+            'host': conf.database_host,
+            'port': conf.database_port,
+            'user': conf.database_user,
+            'passwd': conf.database_passwd,
+            'db': conf.database_name,
+            'charset': 'utf8'
         }
-        self.channel.basic_publish(
-            exchange=conf.judge_exchange,
-            routing_key=conf.judge_result_queue,
-            body=json.dumps(body, ensure_ascii=False),  # We shouldn't mix unicode with str
-            properties=pika.BasicProperties(
-                delivery_mode=2,  # make message persistent
-            ))
+        conn = mdb.connect(**config)
+        cursor = conn.cursor()
+        try:
+            table_name = 'submit_status'
+            value = (table_name, compiler_output, status, score, detail, str(id))
+            sql = """UPDATE %s SET compilerOutput = '%s', status = '%s',
+                score = '%s', detail = '%s' WHERE id = %s;""" % value
+            cursor.execute(sql)
+            conn.commit()
+        except:
+            logging.error("Update database error!")
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()
+
+    def update_redis(self, contest_id, user_id, problem_id, score, highest_score):
+        _redis = redis.Redis(connection_pool=redis.ConnectionPool(
+            host=conf.redis_host,
+            port=conf.redis_port,
+            db=0)
+        )
+        logging.info("Start updating redis!")
+        hashtable_name = "contestscore:{0}:{1}".format(str(contest_id), str(user_id))
+        if highest_score:
+            old_score = _redis.hget(hashtable_name, problem_id)
+            if old_score is None or old_score < score:
+                _redis.hset(hashtable_name, problem_id, score)
+        else:
+            _redis.hset(hashtable_name, problem_id, score)
+
+    def save_result(self, id, status, user_id, case_count, case_score,
+        contest_id, problem_id, highest_score, compiler_output=None):
+        result = 'Accepted'
+        cur_score = 0
+        if compiler_output is None:
+            for index, sta in enumerate(status['result']):
+                if sta['status'] == 'Accepted':
+                    cur_score += case_score[index]
+                else:
+                    result = 'Wrong Answer'
+        else:
+            result = 'Compile Error'
+        status = str(status).replace('\'', '"')
+        self.update_database(id, result, status, cur_score, compiler_output)
+        if compiler_output is None:
+            self.update_redis(contest_id, user_id, problem_id, cur_score, highest_score)
