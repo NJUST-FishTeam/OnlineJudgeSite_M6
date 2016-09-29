@@ -21,10 +21,6 @@ class JudgeSite(object):
 
         # judge_task_queue
         self.channel.queue_declare(queue=conf.judge_task_queue, durable=True)
-        self.channel.queue_bind(queue=conf.judge_task_queue,
-                                exchange=conf.judge_exchange,
-                                routing_key=conf.judge_task_queue)
-
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self._consume, queue=conf.judge_task_queue)
 
