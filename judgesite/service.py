@@ -47,14 +47,20 @@ class JudgeSite(object):
         conn = mdb.connect(**config)
         cursor = conn.cursor()
         try:
-            table_name = 'submit_status'
-            value = (table_name, compiler_output, status, score, detail, str(id))
-            sql = """UPDATE %s SET compilerOutput = '%s', status = '%s',
-                score = '%s', detail = '%s' WHERE id = %s;""" % value
-            cursor.execute(sql)
+            value = {
+                'compiler_output': compiler_output,
+                'status': status,
+                'score': score,
+                'detail': detail,
+                'id': id
+            }
+            sql = """UPDATE `submit_status` SET compilerOutput = %(compiler_output)s,
+                status = %(status)s, score = %(score)s, detail = %(detail)s WHERE id = %(id)s"""
+            cursor.execute(sql, value)
             conn.commit()
-        except:
+        except Exception, e:
             logging.error("Update database error!")
+            logging.error(e)
             conn.rollback()
         finally:
             cursor.close()
@@ -85,6 +91,7 @@ class JudgeSite(object):
                     cur_score += case_score[index]
                 else:
                     result = 'Wrong Answer'
+            compiler_output = ''
         else:
             result = 'Compile Error'
         status = str(status).replace('\'', '"')
