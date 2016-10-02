@@ -82,19 +82,21 @@ class JudgeSite(object):
             _redis.hset(hashtable_name, problem_id, score)
 
     def save_result(self, id, status, user_id, case_count, case_score,
-        contest_id, problem_id, highest_score, compiler_output=None):
-        result = 'Accepted'
+        contest_id, problem_id, highest_score, compiler_output, is_compile_error):
         cur_score = 0
-        if compiler_output is None:
+        if is_compile_error:
+            status = ''
+            result = 'Compile Error'
+        else:
+            result = 'Accepted'
             for index, sta in enumerate(status['result']):
                 if sta['status'] == 'Accepted':
                     cur_score += case_score[index]
                 else:
                     result = 'Wrong Answer'
             compiler_output = ''
-        else:
-            result = 'Compile Error'
         status = str(status).replace('\'', '"')
+
         self.update_database(id, result, status, cur_score, compiler_output)
-        if compiler_output is None:
+        if not is_compile_error:
             self.update_redis(contest_id, user_id, problem_id, cur_score, highest_score)

@@ -38,6 +38,7 @@ class JudgeTask(object):
         self.lang = 0
         self.compiler_output = None
         self.result = {"result":[]}
+        self.is_compile_error = False
 
         self.save_result_callback = save_result_callback
 
@@ -79,6 +80,7 @@ class JudgeTask(object):
         code_file.close()
 
     def _compile_code_exec(self):
+        logging.info("Start compiling code!")
         if self.language == 'cpp':
             self.lang = '2'
             commands = ["g++", self.code_file, "-o", "Main", "-static", "-w",
@@ -95,11 +97,13 @@ class JudgeTask(object):
         try:
             subprocess.check_output(commands, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
+            self.is_compile_error = True
             self.compiler_output = e.output
         except OSError, e:
             logging.error(e)
 
     def _prepare_exec_file(self):
+        logging.info("Copy exec file!")
         if self.language in ['cpp', 'c']:
             exec_file_name_src = 'Main'
             exec_file_name_dst = 'a.out'
@@ -136,7 +140,7 @@ class JudgeTask(object):
 
     def _run(self):
         logging.info("GO!GO!GO!")
-        commands = ["sudo", "./Core", "-t", self.time_limit,
+        commands = ["./Core", "-t", self.time_limit,
             "-m", self.memory_limit, "-d", conf.tmp_path, "-l", self.lang]
         subprocess.call(commands)
 
@@ -153,8 +157,6 @@ class JudgeTask(object):
 
     def _save_result(self):
         logging.info("Save result, result is %s" % self.result)
-        if self.compiler_output:
-            self.result = ""
         self.save_result_callback(
             id = self.id,
             status = self.result,
@@ -164,12 +166,9 @@ class JudgeTask(object):
             contest_id = self.contest_id,
             problem_id = self.problem_id,
             highest_score = self.highest_score,
-            compiler_output = self.compiler_output
+            compiler_output = self.compiler_output,
+            is_compile_error = self.is_compile_error
         )
-
-        self.lang = 0
-        self.compiler_output = None
-        self.result = {"result":[]}
 
     def _clean_files(self):
         logging.info("Clean files")
