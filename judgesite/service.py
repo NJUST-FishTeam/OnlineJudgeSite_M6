@@ -76,10 +76,10 @@ class JudgeSite(object):
         hashtable_name = "contestscore:{0}:{1}".format(str(contest_id), str(user_id))
         if highest_score:
             old_score = _redis.hget(hashtable_name, problem_id)
-            if old_score is None or old_score < score:
-                _redis.hset(hashtable_name, problem_id, score)
+            if old_score is None or int(old_score) < score:
+                _redis.hset(hashtable_name, problem_id, str(score))
         else:
-            _redis.hset(hashtable_name, problem_id, score)
+            _redis.hset(hashtable_name, problem_id, str(score))
 
     def save_result(self, id, status, user_id, case_count, case_score,
         contest_id, problem_id, highest_score, compiler_output, is_compile_error):
