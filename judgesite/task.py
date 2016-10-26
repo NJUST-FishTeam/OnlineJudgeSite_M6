@@ -15,6 +15,10 @@ class NoTestDataException(Exception):
     pass
 
 
+class NoSpecialJudgeException(Exception):
+    pass
+
+
 class JudgeTask(object):
 
     def __init__(self, message, save_result_callback):
@@ -49,6 +53,8 @@ class JudgeTask(object):
             self._prepare_testdata_file()
         except NoTestDataException, e:
             self.result = 'NoTestDataError'
+        except NoSpecialJudgeException, e:
+            self.result = 'NoSpecialJudgeException'
         except Exception, e:
             raise e
         else:
@@ -62,11 +68,14 @@ class JudgeTask(object):
 
     def _compile_spj_exec(self):
         if self.validator == 'Special Validator':
+            spj_code_file = os.path.join(
+                    conf.testdata_path, self.testdata_id, "specialjudge.cpp")
             spj_exec_path = os.path.join(
                 conf.testdata_path, self.testdata_id, "SpecialJudge")
+            if not os.path.exists(spj_code_file):
+                # 不存在spj程序, 2016/10/22 由于老版SPJ题不存在spj.cpp, 导致judge site崩溃
+                raise NoSpecialJudgeException()
             if not os.path.exists(spj_exec_path):
-                spj_code_file = os.path.join(
-                    conf.testdata_path, self.testdata_id, "specialjudge.cpp")
                 commands = ["g++", spj_code_file, "-lm",
                             "-static", "-O2", "-w", '-o', spj_exec_path]
                 subprocess.call(commands)
