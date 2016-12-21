@@ -34,8 +34,41 @@ class JudgeSite(object):
     def run(self):
         self.channel.start_consuming()
 
-    def update_database(self, id, status, detail, score, compiler_output):
-        logging.info("Start updating database")
+    def update_submit_status(self, id, status, detail, score, compiler_output, cursor):
+        logging.info("Start updating submit_status")
+        value = {
+            'compiler_output': compiler_output,
+            'status': status,
+            'score': score,
+            'detail': detail,
+            'id': id
+        }
+        sql = """UPDATE `submit_status` SET compilerOutput = %(compiler_output)s,
+            status = %(status)s, score = %(score)s, detail = %(detail)s WHERE id = %(id)s"""
+        cursor.execute(sql, value)
+
+    def update_problem_solved_record(self, cur_score, is_solved, pro_solved_rec_id, cursor):
+        logging.info("Start updating problem_solved_record")
+        value = {'id': pro_solved_rec_id}
+        sql = """SELECT `highest_score`, solved FROM `problem_solved_record` WHERE id = %(id)s"""
+        cursor.execute(sql, value)
+        fetch_result = cursor.fetchone()
+        is_solved = max(is_solved, int(fetch_result[1]))
+        highest_score = max(int(fetch_result[0]), cur_score)
+
+        value = {
+            'solved': is_solved,
+            'id': pro_solved_rec_id,
+            'last_score': cur_score,
+            'highest_score': highest_score
+        }
+        sql = """UPDATE `problem_solved_record` SET last_score = %(last_score)s,
+            highest_score = %(highest_score)s, solved = %(solved)s WHERE id = %(id)s"""
+        cursor.execute(sql, value)
+
+    def update_database(self, status, detail, status_id, cur_score, is_solved,
+        compiler_output, pro_solved_rec_id, is_compile_error):
+        logging.info('Start updating database')
         config = {
             'host': conf.database_host,
             'port': conf.database_port,
@@ -46,17 +79,11 @@ class JudgeSite(object):
         }
         conn = mdb.connect(**config)
         cursor = conn.cursor()
+
         try:
-            value = {
-                'compiler_output': compiler_output,
-                'status': status,
-                'score': score,
-                'detail': detail,
-                'id': id
-            }
-            sql = """UPDATE `submit_status` SET compilerOutput = %(compiler_output)s,
-                status = %(status)s, score = %(score)s, detail = %(detail)s WHERE id = %(id)s"""
-            cursor.execute(sql, value)
+            self.update_submit_status(status_id, status, detail, cur_score, compiler_output, cursor)
+            if not is_compile_error:
+                self.update_problem_solved_record(cur_score, is_solved, pro_solved_rec_id, cursor)
             conn.commit()
         except Exception, e:
             logging.error("Update database error!")
@@ -66,37 +93,32 @@ class JudgeSite(object):
             cursor.close()
             conn.close()
 
-    def update_redis(self, contest_id, user_id, problem_id, score, highest_score):
-        _redis = redis.Redis(connection_pool=redis.ConnectionPool(
-            host=conf.redis_host,
-            port=conf.redis_port,
-            db=0)
-        )
-        logging.info("Start updating redis!")
-        hashtable_name = "contestscore:{0}:{1}".format(str(contest_id), str(user_id))
-        if highest_score:
-            old_score = _redis.hget(hashtable_name, problem_id)
-            if old_score is None or int(old_score) < score:
-                _redis.hset(hashtable_name, problem_id, str(score))
-        else:
-            _redis.hset(hashtable_name, problem_id, str(score))
-
-    def save_result(self, id, status, user_id, case_count, case_score,
-        contest_id, problem_id, highest_score, compiler_output, is_compile_error):
+    def save_result(self, status_id, detail, case_score,
+            compiler_output, is_compile_error, pro_solved_rec_id):
         cur_score = 0
         if is_compile_error:
-            status = ''
-            result = 'Compile Error'
+            detail = ''
+            status = 'Compile Error'
         else:
-            result = 'Accepted'
-            for index, sta in enumerate(status['result']):
+            status = 'Accepted'
+            for index, sta in enumerate(detail['result']):
                 if sta['status'] == 'Accepted':
                     cur_score += case_score[index]
                 else:
-                    result = 'Wrong Answer'
+                    status = 'Wrong Answer'
             compiler_output = ''
-        status = str(status).replace('\'', '"')
+            if status == 'Wrong Answer' and cur_score > 0:
+                status = 'Partially Correct'
+        detail = str(detail).replace('\'', '"')
+        is_solved = 1 if status == 'Accepted' else 0
 
-        self.update_database(id, result, status, cur_score, compiler_output)
-        if not is_compile_error:
-            self.update_redis(contest_id, user_id, problem_id, cur_score, highest_score)
+        self.update_database(
+            status=status,
+            detail=detail,
+            status_id=status_id,
+            cur_score=cur_score,
+            is_solved=is_solved,
+            compiler_output=compiler_output,
+            is_compile_error=is_compile_error,
+            pro_solved_rec_id=pro_solved_rec_id
+        )

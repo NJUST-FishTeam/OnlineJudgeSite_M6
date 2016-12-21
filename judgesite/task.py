@@ -22,7 +22,7 @@ class JudgeTask(object):
 
     def __init__(self, message, save_result_callback):
         task = json.loads(message)
-        self.id = task['statusid']
+        self.status_id = task['statusid']
         self.code = task["code"]
         self.language = task["lang"]
         self.testdata_id = str(task["testdataid"])
@@ -30,10 +30,7 @@ class JudgeTask(object):
         self.memory_limit = str(task["memorylimit"])
         self.case_count = int(task["casecount"])
         self.case_score = task["casescore"]
-        self.contest_id = str(task["contestid"])
-        self.problem_id = str(task["problemid"])
-        self.user_id = task["userid"]
-        self.highest_score = int(task["highest_score"])
+        self.pro_solved_rec_id = int(task["prosolvedrecid"])
 
         self.lang = 0
         self.compiler_output = None
@@ -42,7 +39,7 @@ class JudgeTask(object):
 
         self.save_result_callback = save_result_callback
 
-        logging.info("Task id is: %s" % self.id)
+        logging.info("Task id is: %s" % self.status_id)
 
     def go(self):
         self._clean_files()
@@ -158,16 +155,12 @@ class JudgeTask(object):
     def _save_result(self):
         logging.info("Save result, result is %s" % self.result)
         self.save_result_callback(
-            id = self.id,
-            status = self.result,
-            user_id = self.user_id,
-            case_count = self.case_count,
+            status_id = self.status_id,
+            detail = self.result,
             case_score = self.case_score,
-            contest_id = self.contest_id,
-            problem_id = self.problem_id,
-            highest_score = self.highest_score,
             compiler_output = self.compiler_output,
-            is_compile_error = self.is_compile_error
+            is_compile_error = self.is_compile_error,
+            pro_solved_rec_id = self.pro_solved_rec_id
         )
 
     def _clean_files(self):

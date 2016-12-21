@@ -24,8 +24,8 @@ Configure = namedtuple("Configure", [
 ])
 
 conf = Configure(
-    testdata_path="/home/shuwei/project/fishteam/judgenode/testdata/",
-    tmp_path="/home/shuwei/project/fishteam/judgenode/tmp/",
+    testdata_path="/home/shuwei/project/fishteam/catProject/judgenode/testdata/",
+    tmp_path="/home/shuwei/project/fishteam/catProject/judgenode/tmp/",
     rmq_host="localhost",
     rmq_port=5672,
     rmq_user="guest",
