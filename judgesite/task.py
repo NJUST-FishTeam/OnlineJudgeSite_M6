@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+from __future__ import unicode_literals
+
 import logging
-import io
 import json
 import shutil
-import subprocess
 import os
+
+import ljudge
 
 from config import conf
 
@@ -31,54 +34,32 @@ class JudgeTask(object):
         self.memory_limit = str(task["memory_limit"])
         self.validator = str(task["validator"])
 
-        self.result = ""
-        self.run_time = 0
-        self.run_memory = 0
-        self.others = ""
+        self.result = {}
 
         self.save_result_callback = save_result_callback
 
         logging.info("Task id is: %s" % self.id)
 
-    def go(self):
+    def run(self):
         self._clean_files()
-
         try:
-            self._compile_spj_exec()
-
             self._prepare_temp_dir()
 
             self._dump_code_to_file()
 
             self._prepare_testdata_file()
-        except NoTestDataException, e:
+        except NoTestDataException as e:
             self.result = 'NoTestDataError'
-        except NoSpecialJudgeException, e:
+        except NoSpecialJudgeException as e:
             self.result = 'NoSpecialJudgeException'
-        except Exception, e:
+        except Exception as e:
             raise e
         else:
             self._run()
 
-            self._read_result()
-
         self._save_result()
 
         self._clean_files()
-
-    def _compile_spj_exec(self):
-        if self.validator == 'Special Validator':
-            spj_code_file = os.path.join(
-                    conf.testdata_path, self.testdata_id, "specialjudge.cpp")
-            spj_exec_path = os.path.join(
-                conf.testdata_path, self.testdata_id, "SpecialJudge")
-            if not os.path.exists(spj_code_file):
-                # 不存在spj程序, 2016/10/22 由于老版SPJ题不存在spj.cpp, 导致judge site崩溃
-                raise NoSpecialJudgeException()
-            if not os.path.exists(spj_exec_path):
-                commands = ["g++", spj_code_file, "-lm",
-                            "-static", "-O2", "-w", '-o', spj_exec_path]
-                subprocess.call(commands)
 
     def _prepare_temp_dir(self):
         logging.info("Prepare temp dir")
@@ -88,50 +69,85 @@ class JudgeTask(object):
         logging.info("Dump code to file")
         filename = "Main." + self.language
         self.code_file = os.path.join(conf.tmp_path, filename)
-        code_file = io.open(self.code_file, 'w', encoding='utf8')
-        code_file.write(self.code)
-        code_file.close()
+        with open(self.code_file, 'w', encoding='utf8') as code_file:
+            code_file.write(self.code)
 
     def _prepare_testdata_file(self):
         logging.info("Prepare testdata")
-        input_file = os.path.join(
+        self.input_file = os.path.join(
             conf.testdata_path, self.testdata_id, "in.in")
-        output_file = os.path.join(
+        self.output_file = os.path.join(
             conf.testdata_path, self.testdata_id, "out.out")
-        if not os.path.exists(input_file) or not os.path.exists(output_file):
+        if not os.path.exists(self.input_file) or\
+                not os.path.exists(self.output_file):
             raise NoTestDataException
-        shutil.copy(input_file, conf.tmp_path)
-        shutil.copy(output_file, conf.tmp_path)
         if self.validator == 'Special Validator':
-            spj_exec_path = os.path.join(
-                conf.testdata_path, self.testdata_id, "SpecialJudge")
-            shutil.copy(spj_exec_path, conf.tmp_path)
+            self.spj_code_file = os.path.join(
+                conf.testdata_path, self.testdata_id, "specialjudge.cpp")
+            if not os.path.exists(self.spj_code_file):
+                # 不存在spj程序, 2016/10/22 由于老版SPJ题不存在spj.cpp, 导致judge site崩溃
+                raise NoSpecialJudgeException()
+
+    @staticmethod
+    def _parse_ljudge_result(ljudge_res):
+        result = {
+            'status': '',
+            'time': 0,
+            'memory': 0,
+            'compiler_output': '',
+        }
+        if not ljudge_res['compilation']['success']:
+            result['status'] = 'Compile Error'
+            result['compiler_output'] = ljudge_res['compilation']['log']
+            return result
+        if not ljudge_res.get('checkerCompilation', dict(success=True)).\
+                get('success'):
+            result['status'] = 'Spj Compile Error'
+            return result
+        testcase = ljudge_res['testcases'][0]   # oj 单case
+        status_map = {
+            'ACCEPTED': 'Accepted',
+            'PRESENTATION_ERROR': 'Presentation Error',
+            'WRONG_ANSWER': 'Wrong Answer',
+            'NON_ZERO_EXIT_CODE': 'Non Zero Exit Code',
+            'MEMORY_LIMIT_EXCEEDED': 'Memory Limit Exceeded',
+            'TIME_LIMIT_EXCEEDED': 'Time Limit Exceeded',
+            'OUTPUT_LIMIT_EXCEEDED': 'Output Limit Exceeded',
+            'FLOAT_POINT_EXCEPTION': 'Float Point Error',
+            'SEGMENTATION_FAULT': 'Segmentation Fault',
+            'RUNTIME_ERROR': 'Runtime Error',
+            'INTERNAL_ERROR': 'System Error',
+        }
+        result['status'] = status_map.get(testcase['result'], 'System Error')
+        result['time'] = int(testcase.get('time', 0)*1000)      # s to ms
+        result['memory'] = int(testcase.get('memory', 0)/1024)  # B to KB
+        return result
 
     def _run(self):
         logging.info("GO!GO!GO!")
-        commands = ["sudo", "./Core", "-c", self.code_file, "-t",
-                    self.time_limit, "-m", self.memory_limit, "-d",
-                    conf.tmp_path]
+        opts = {
+            'max-cpu-time': self.time_limit / 1000,
+            'max-memory': '{0}K'.format(self.memory_limit),
+            'user-code': self.code_file,
+            'max-compiler-real-time': 10,
+            'max-compiler-memory': '256M',
+            'testcase': {
+                'input': self.input_file,
+                'output': self.output_file,
+            }
+        }
         if self.validator == 'Special Validator':
-            commands += ["-s", "-S", "2"]  # 2 = cpp
-        subprocess.call(commands)
-
-    def _read_result(self):
-        logging.info("Read result")
-        result_file = open(os.path.join(conf.tmp_path, "result.txt"), 'r')
-        self.result = result_file.readline().strip()
-        self.run_time = result_file.readline().strip()
-        self.run_memory = result_file.readline().strip()
-        self.others = result_file.read()
+            opts['checker-code'] = self.spj_code_file
+        self.result = self._parse_ljudge_result(ljudge.run(opts))
 
     def _save_result(self):
-        logging.info("Save result, result is %s" % self.result)
+        logging.info("Save result, result is %s" % self.result['status'])
         self.save_result_callback(
             id=self.id,
-            run_time=self.run_time,
-            run_memory=self.run_memory,
-            compiler_output=self.others,
-            status=self.result)
+            run_time=self.result['time'],
+            run_memory=self.result['memory'],
+            compiler_output=self.result['compiler_output'],
+            status=self.result['status'])
 
     def _clean_files(self):
         logging.info("Clean files")
