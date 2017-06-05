@@ -34,7 +34,7 @@ class JudgeSite(object):
     def _consume(self, ch, method, properties, body):
         logging.info("GOT A TASK!")
         task = JudgeTask(body, self.save_result)
-        task.go()
+        task.run()
         self.channel.basic_ack(delivery_tag=method.delivery_tag)
         logging.info("TASK IS DONE!")
 
