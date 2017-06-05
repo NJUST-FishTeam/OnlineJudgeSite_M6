@@ -69,7 +69,7 @@ class JudgeTask(object):
         logging.info("Dump code to file")
         filename = "Main." + self.language
         self.code_file = os.path.join(conf.tmp_path, filename)
-        with open(self.code_file, 'w', encoding='utf8') as code_file:
+        with open(self.code_file, 'w') as code_file:
             code_file.write(self.code)
 
     def _prepare_testdata_file(self):
@@ -126,7 +126,8 @@ class JudgeTask(object):
     def _run(self):
         logging.info("GO!GO!GO!")
         opts = {
-            'max-cpu-time': self.time_limit / 1000,
+            'max-cpu-time': int(self.time_limit) / 1000,
+            'max-real-time': 20.0,                              # 最多运行20s
             'max-memory': '{0}K'.format(self.memory_limit),
             'user-code': self.code_file,
             'max-compiler-real-time': 10,
