@@ -53,7 +53,8 @@ class JudgeTask(object):
         except NoSpecialJudgeException as e:
             self.result = 'NoSpecialJudgeException'
         except Exception as e:
-            raise e
+            self.result = 'System Error'
+            logging.exception(e)
         else:
             self._run()
 
@@ -70,7 +71,7 @@ class JudgeTask(object):
         filename = "Main." + self.language
         self.code_file = os.path.join(conf.tmp_path, filename)
         with open(self.code_file, 'w') as code_file:
-            code_file.write(self.code)
+            code_file.write(self.code.encode('utf-8'))
 
     def _prepare_testdata_file(self):
         logging.info("Prepare testdata")
