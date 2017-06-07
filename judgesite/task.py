@@ -52,6 +52,9 @@ class JudgeTask(object):
             self.result = 'NoTestDataError'
         except NoSpecialJudgeException as e:
             self.result = 'NoSpecialJudgeException'
+        except Exception as e:
+            self.result = 'System Error'
+            logging.exception(e)
         else:
             self._run()
 
