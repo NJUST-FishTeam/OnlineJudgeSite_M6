@@ -22,6 +22,16 @@ class NoSpecialJudgeException(Exception):
     pass
 
 
+def make_task_result():
+    result = {
+        'status': '',
+        'time': 0,
+        'memory': 0,
+        'compiler_output': '',
+    }
+    return result
+
+
 class JudgeTask(object):
 
     def __init__(self, message, save_result_callback):
@@ -34,7 +44,7 @@ class JudgeTask(object):
         self.memory_limit = str(task["memory_limit"])
         self.validator = str(task["validator"])
 
-        self.result = {}
+        self.result = make_task_result()
 
         self.save_result_callback = save_result_callback
 
@@ -49,11 +59,11 @@ class JudgeTask(object):
 
             self._prepare_testdata_file()
         except NoTestDataException as e:
-            self.result = 'NoTestDataError'
+            self.result['status'] = 'NoTestDataError'
         except NoSpecialJudgeException as e:
-            self.result = 'NoSpecialJudgeException'
+            self.result['status'] = 'NoSpecialJudgeException'
         except Exception as e:
-            self.result = 'System Error'
+            self.result['status'] = 'System Error'
             logging.exception(e)
         else:
             self._run()
@@ -91,12 +101,7 @@ class JudgeTask(object):
 
     @staticmethod
     def _parse_ljudge_result(ljudge_res):
-        result = {
-            'status': '',
-            'time': 0,
-            'memory': 0,
-            'compiler_output': '',
-        }
+        result = make_task_result()
         if not ljudge_res['compilation']['success']:
             result['status'] = 'Compile Error'
             result['compiler_output'] = ljudge_res['compilation']['log']
